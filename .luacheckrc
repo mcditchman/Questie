@@ -2939,7 +2939,6 @@ globals = {
     "C_Spell.GetSpellInfo",
     "C_UnitAuras.GetAuraDataByIndex",
     "ObjectiveTrackerFrame",
-    "SetDesaturation",
     "TooltipDataProcessor.AddLinePreCall",
     "TooltipDataProcessor.AddLinePostCall",
     "TooltipDataProcessor.AddTooltipPreCall",
