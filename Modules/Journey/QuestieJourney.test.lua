@@ -1,0 +1,99 @@
+dofile("setupTests.lua")
+
+local LOADING_MESSAGE = "Please wait a moment for Questie to finish loading"
+
+describe("QuestieJourney", function()
+    ---@type QuestieJourney
+    local QuestieJourney
+    ---@type JourneyWindow
+    local JourneyWindow
+    local originalQuestie, originalPrint
+    local isShown, openedTabs, printed
+
+    before_each(function()
+        originalQuestie, originalPrint = _G.Questie, _G.print
+        _G.Questie = {
+            started = true,
+            db = {char = {guid = "Player-1"}, global = {journeyKeybindDefaultApplied = true}, profile = {}},
+            Colorize = function(_, text) return text end,
+        }
+        printed = {}
+        _G.print = function(text) table.insert(printed, text) end
+
+        dofile("Modules/Libs/QuestieLoader.lua")
+        dofile("Modules/Expansions.lua")
+        dofile("Localization/l10n.lua")
+
+        isShown, openedTabs = false, {}
+        JourneyWindow = QuestieLoader:ImportModule("JourneyWindow")
+        JourneyWindow.Show = function(tabKey)
+            isShown = true
+            table.insert(openedTabs, tabKey or "the last one")
+        end
+        JourneyWindow.Hide = function() isShown = false end
+        JourneyWindow.IsShown = function() return isShown end
+
+        dofile("Modules/Journey/QuestieJourney.lua")
+        QuestieJourney = QuestieLoader:ImportModule("QuestieJourney")
+    end)
+
+    after_each(function()
+        _G.Questie, _G.print = originalQuestie, originalPrint
+    end)
+
+    describe("ToggleJourneyWindow", function()
+        it("should open the window on the last tab, and close it again", function()
+            QuestieJourney:ToggleJourneyWindow()
+            assert.is_true(QuestieJourney:IsShown())
+            assert.are_same({"the last one"}, openedTabs)
+
+            QuestieJourney:ToggleJourneyWindow()
+            assert.is_false(QuestieJourney:IsShown())
+            assert.are_same({"the last one"}, openedTabs)
+        end)
+    end)
+
+    -- The binding and the menus work before the data for the tabs is ready
+    describe("while Questie is loading", function()
+        before_each(function()
+            Questie.started = false
+        end)
+
+        for name, open in pairs({
+            ToggleJourneyWindow = function() QuestieJourney:ToggleJourneyWindow() end,
+            OpenTab = function() QuestieJourney.OpenTab("search") end,
+        }) do
+            it("should ask to wait instead of opening the window with " .. name, function()
+                open()
+
+                assert.is_false(QuestieJourney:IsShown())
+                assert.are_same({LOADING_MESSAGE}, printed)
+            end)
+        end
+    end)
+
+    describe("Initialize", function()
+        it("should prepare the data without opening the window", function()
+            _G.UnitGUID = function() return "Player-1" end
+            QuestieLoader:ImportModule("l10n").continentLookup = {}
+            QuestieLoader:ImportModule("QuestiePlayer").GetLocalizedClassName = function() return "Warrior" end
+            local zoneMap, zones = {[12] = {[1] = true}}, {[1] = {[12] = "Elwynn Forest"}}
+            QuestieLoader:ImportModule("JourneyData").Build = function() return zoneMap, zones end
+            local prepared = {}
+            QuestieJourney.private.questsByFaction = {
+                InitializeFactionData = function() table.insert(prepared, "factions") end,
+                InitializeFactionQuestData = function() table.insert(prepared, "quests of factions") end,
+            }
+
+            local thread = coroutine.create(function() QuestieJourney:Initialize() end)
+            while coroutine.status(thread) ~= "dead" do
+                assert(coroutine.resume(thread))
+            end
+
+            assert.are.equal(zoneMap, QuestieJourney.zoneMap)
+            assert.are.equal(zones, QuestieJourney.zones)
+            assert.are_same({"factions", "quests of factions"}, prepared)
+            assert.are_same({}, openedTabs)
+        end)
+    end)
+end)
