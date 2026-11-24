@@ -214,6 +214,12 @@ describe("TrackerQuestTooltip", function()
         assert.spy(tooltip.Show).was.called(1)
     end)
 
+    it("should resize the tooltip after rendering the party progress without a share hint", function()
+        TrackerQuestTooltip.Show(_Line())
+
+        assert.spy(tooltip.Show).was.called(1)
+    end)
+
     it("should not add the share hint when the quest can not be shared", function()
         TrackerQuestTooltip.Show(_Line())
 

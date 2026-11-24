@@ -128,8 +128,9 @@ local function _Refresh()
     if canShare then
         local hint = l10n("(") .. _GetShortcutText(Questie.db.profile.trackerbindShareQuest) .. l10n(": ") .. l10n("Share Quest") .. l10n(")")
         tooltip:AddLine(Questie:Colorize(hint, "gray"))
-        tooltip:Show()
     end
+    -- Resizes the tooltip to the objective rows Questie widened after Blizzard laid them out
+    tooltip:Show()
 end
 
 ---@param line TrackerLineFrame
