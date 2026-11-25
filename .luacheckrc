@@ -2870,6 +2870,12 @@ globals = {
     -----------------------------------------------------> Blizzard Data
     "AMBIENCE_VOLUME",
     "CALENDAR_FULLDATE_MONTH_NAMES",
+    "COMBAT_XP_GAIN",
+    "HISTORY",
+    "OVERVIEW",
+    "QUEST_LOG",
+    "QUEST_WATCH_QUEST_READY",
+    "REWARDS",
     "CALENDAR_WEEKDAY_NAMES",
     "CANCEL",
     "CLOSE",
