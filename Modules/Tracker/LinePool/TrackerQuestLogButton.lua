@@ -185,14 +185,14 @@ function TrackerQuestLogButton.Initialize()
     overlay:SetScript("OnEvent", _MoveAway)
 end
 
----Moves the button over a quest line, if the click bound to the quest log can click Blizzard's quest title.
+---Moves the button over a quest line, if debug is enabled and the click bound to the quest log can click Blizzard's quest title.
 ---@param line TrackerLineFrame
 function TrackerQuestLogButton.Attach(line)
     if (not overlay) or InCombatLockdown() then
         return
     end
 
-    if line.onClickMode ~= "quest" or (not line.Quest) or _IsGamepadUI() or (not TITLE_CLICK_SHORTCUTS[Questie.db.profile.trackerbindOpenQuestLog]) then
+    if (not Questie.db.profile.debugEnabled) or line.onClickMode ~= "quest" or (not line.Quest) or _IsGamepadUI() or (not TITLE_CLICK_SHORTCUTS[Questie.db.profile.trackerbindOpenQuestLog]) then
         _MoveAway()
         return
     end

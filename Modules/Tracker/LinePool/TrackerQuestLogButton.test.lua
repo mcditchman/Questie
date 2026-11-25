@@ -81,7 +81,7 @@ describe("TrackerQuestLogButton", function()
             return overlay
         end
         Questie.IsForever = true
-        Questie.db = {profile = {trackerbindOpenQuestLog = "left"}}
+        Questie.db = {profile = {trackerbindOpenQuestLog = "left", debugEnabled = true}}
 
         menuBuilder = QuestieLoader:ImportModule("QuestieMenuBuilder")
         menuBuilder.IsOpen = function() return false end
@@ -161,6 +161,14 @@ describe("TrackerQuestLogButton", function()
             assert.are_same({{point = "TOPLEFT", relativeTo = line, x = 25, y = -1}, {point = "BOTTOMRIGHT", relativeTo = line, x = 0, y = 0}}, overlay.points)
             assert.are_same("MEDIUM", overlay.strata)
             assert.are_same(7, overlay.level)
+        end)
+
+        it("should not cover a line when debug is disabled", function()
+            Questie.db.profile.debugEnabled = false
+
+            _Attach(_QuestLine())
+
+            assert.are_same(1, #overlay.points)
         end)
 
         it("should not cover a line that is no quest line", function()
